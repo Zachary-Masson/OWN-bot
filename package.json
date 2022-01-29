@@ -1,0 +1,33 @@
+{
+  "name": "serveurfivem",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.ts",
+    "devStart": "nodemon main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevNetworktm/ServeurFivem.git"
+  },
+  "keywords": [
+    "botDiscord",
+    "discordJS",
+    "v13",
+    "DevNetwork"
+  ],
+  "author": "DevNetwork",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DevNetworktm/ServeurFivem/issues"
+  },
+  "homepage": "https://github.com/DevNetworktm/ServeurFivem#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.6.0",
+    "dotenv": "^14.3.2",
+    "mariadb": "^2.5.5"
+  }
+}

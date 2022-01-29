@@ -1,0 +1,8 @@
+{
+    "bot": {
+        "activity": {
+            "name": "👤・$guild.memberCount",
+            "type": "WATCHING"
+        }
+    }
+}
