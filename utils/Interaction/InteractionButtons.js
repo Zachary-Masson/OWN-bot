@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { Client, Interaction } = require("discord.js");
 
 exports.deploy = (client) => {
   console.log("\n[\x1b[32mDEBUG\x1b[0m] Enregistrement des Buttons ⤵");
@@ -16,4 +17,16 @@ exports.deploy = (client) => {
       );
     });
   return;
+};
+/**
+ *
+ * @param {Client} client
+ * @param {Interaction} interaction
+ */
+exports.find = (client, interaction) => {
+  const button = client.interactions.buttons.filter(
+    (btn) =>
+      btn.data.customID.split("#")[0] === interaction.customId.split("#")[0]
+  )[0];
+  button.execute(client, interaction);
 };

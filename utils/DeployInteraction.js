@@ -35,6 +35,7 @@ class DeployInteraction {
           "[\x1b[32mDEBUG\x1b[0m] Le deploiment des commandes ce sont fais avec succès."
         );
       } catch (error) {
+        console.log(error);
         console.log(
           "[\x1b[31mERROR\x1b[0m] Une erreur est survenue pendant le deploiment des commandes."
         );

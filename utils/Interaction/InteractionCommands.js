@@ -17,3 +17,10 @@ exports.deploy = (client) => {
     });
   return;
 };
+
+exports.find = (client, interaction) => {
+  const command = client.commands.filter(
+    (cmd) => cmd.data.name === interaction.commandName
+  )[0];
+  command.execute(client, interaction);
+};

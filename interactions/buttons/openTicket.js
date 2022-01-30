@@ -1,18 +1,20 @@
 const { MessageButton, Client, Interaction } = require("discord.js");
 
 exports.data = {
-  name: "Accepter Réglement",
-  description: "Se boutons sert a accepter le réglement",
-  emoji: "✅",
-  label: "J'accepte le réglement!",
+  name: "Ouverture de Ticket",
+  description: "Se boutons sert a ouvrir un ticket",
+  emoji: "",
+  label: "",
   style: "SECONDARY",
-  customID: "accept_rule#{{ QUERY }}",
+  customID: "openticket#{{ QUERY }}",
 };
 
-exports.button = (QUERY) => {
+exports.button = (QUERY, options) => {
   const button = new MessageButton();
-  button.setEmoji(this.data.emoji);
-  button.setLabel(this.data.label);
+
+  button.setEmoji(options.emoji);
+  button.setLabel(options.label);
+
   button.setStyle(this.data.style);
   button.setCustomId(
     this.data.customID.replace("#{{ QUERY }}", QUERY ? `#${QUERY}` : "")
@@ -26,12 +28,7 @@ exports.button = (QUERY) => {
  */
 exports.execute = async (client, interaction) => {
   const { database } = client;
-  const info = await database
-    .query("SELECT * FROM bot_data WHERE id = 1")
-    .then((request) => request[0]);
 
-  const role = await interaction.guild.roles.fetch(info.ROLE_MEMBER);
-  interaction.member.roles.add(role);
   interaction.reply({
     content: "Vous avez correctement était vérifier !",
     ephemeral: true,

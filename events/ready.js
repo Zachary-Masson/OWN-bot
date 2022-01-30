@@ -1,12 +1,8 @@
 require("dotenv").config();
 const { Client, MessageEmbed, MessageActionRow } = require("discord.js");
 exports._name = "ready";
-/**
- *
- * @param {Client} client
- */
-exports.exec = async (client) => {
-  const { database } = client;
+
+const refreshRule = async (client, database) => {
   const infoRules = await database.query(
     "SELECT * FROM bot_rules WHERE id = 1"
   );
@@ -95,4 +91,166 @@ exports.exec = async (client) => {
       }
     }
   }, 10 * 60 * 1000);
+};
+
+const refreshTickets = async (client, database) => {
+  const ticketData = await database
+    .query("SELECT * FROM bot_tickets_data WHERE id = 1")
+    .then((request) => request[0]);
+
+  let currentTicketData = new Object();
+
+  setInterval(async () => {
+    const newTicketData = await database
+      .query("SELECT * FROM bot_tickets_data WHERE id = 1")
+      .then((request) => request[0]);
+    if (
+      currentTicketData["id"] === undefined &&
+      ticketData.messageID === null
+    ) {
+      currentTicketData = ticketData;
+      const guild = client.guilds.cache.get(process.env.GUILD_ID);
+      const channel = await guild.channels.fetch(ticketData.channelID);
+
+      const embed = new MessageEmbed()
+        .setTitle("Système Ticket")
+        .setColor("#9b9b9b")
+        .setTimestamp();
+      const comp = new MessageActionRow();
+      let description =
+        "Bonjour/Bonjour voici tout les tickets que vous pouvez ouvrir :\n";
+
+      const category = await database.query(
+        "SELECT * FROM bot_tickets_category"
+      );
+
+      const dataBOT = await database
+        .query("SELECT * FROM bot_data WHERE id = 1")
+        .then((request) => request[0]);
+
+      await category.map(async (cat) => {
+        const data = JSON.parse(cat.data);
+        description += `\n"${data.name}" | *${data.description}*`;
+        comp.addComponents(
+          require("../interactions/buttons/openTicket").button(data.uuid, {
+            emoji: data.button.emoji,
+            label: data.button.label,
+          })
+        );
+      });
+
+      embed.setDescription(description);
+
+      const message = await channel.send({
+        embeds: [embed],
+        components: [comp],
+      });
+
+      database.query("UPDATE bot_tickets_data SET messageID = ? WHERE id = 1", [
+        message.id,
+      ]);
+      category.map(async (cat) => {
+        const data = JSON.parse(cat.data);
+        if (data["categoryID"] === "undefined") {
+          const ch = await guild.channels.create(data.category, {
+            type: "GUILD_CATEGORY",
+            permissionOverwrites: [
+              {
+                deny: "VIEW_CHANNEL",
+                id: guild.id,
+              },
+              {
+                allow: "VIEW_CHANNEL",
+                id: dataBOT.ROLE_SUPPORT,
+              },
+            ],
+          });
+          data["categoryID"] = ch.id;
+          database.query(
+            "UPDATE bot_tickets_category SET data = ? WHERE id = ?",
+            [data, cat.id]
+          );
+        }
+      });
+    } else if (newTicketData.edit === "true" && ticketData.messageID !== null) {
+      const guild = client.guilds.cache.get(process.env.GUILD_ID);
+      const channel = await guild.channels.fetch(newTicketData.channelID);
+      const message = await channel.messages.fetch(newTicketData.messageID);
+
+      const embed = new MessageEmbed()
+        .setTitle("Système Ticket")
+        .setColor("#9b9b9b")
+        .setTimestamp();
+      const comp = new MessageActionRow();
+      let description =
+        "Bonjour/Bonjour voici tout les tickets que vous pouvez ouvrir :\n";
+
+      const category = await database.query(
+        "SELECT * FROM bot_tickets_category"
+      );
+
+      const dataBOT = await database
+        .query("SELECT * FROM bot_data WHERE id = 1")
+        .then((request) => request[0]);
+
+      await category.map(async (cat) => {
+        const data = JSON.parse(cat.data);
+        description += `\n"${data.name}" | *${data.description}*`;
+        comp.addComponents(
+          require("../interactions/buttons/openTicket").button(data.uuid, {
+            emoji: data.button.emoji,
+            label: data.button.label,
+          })
+        );
+      });
+
+      embed.setDescription(description);
+
+      message.edit({
+        embeds: [embed],
+        components: [comp],
+      });
+
+      database.query("UPDATE bot_tickets_data SET edit = ? WHERE id = 1", [
+        "false",
+      ]);
+      category.map(async (cat) => {
+        const data = JSON.parse(cat.data);
+        if (data["categoryID"] === "undefined") {
+          const ch = await guild.channels.create(data.category, {
+            type: "GUILD_CATEGORY",
+            permissionOverwrites: [
+              {
+                deny: "VIEW_CHANNEL",
+                id: guild.id,
+              },
+              {
+                allow: "VIEW_CHANNEL",
+                id: dataBOT.ROLE_SUPPORT,
+              },
+            ],
+          });
+          data["categoryID"] = ch.id;
+          database.query(
+            "UPDATE bot_tickets_category SET data = ? WHERE id = ?",
+            [data, cat.id]
+          );
+        }
+      });
+    }
+  }, 30 * 60 * 1000);
+};
+
+/**
+ *
+ * @param {Client} client
+ */
+exports.exec = async (client) => {
+  const { database } = client;
+
+  // Actualisation du réglement
+  refreshRule(client, database);
+
+  // Actualisation des tickets
+  refreshTickets(client, database);
 };
